@@ -77,7 +77,7 @@ module JsonW
             str << unicode(@data[@index, 4])
             @index += 4
           else
-            raise ParseError.new("Unable to parse string escape sequence")
+            raise ParseError.new("Invalid string escape sequence")
           end
         end
       end
