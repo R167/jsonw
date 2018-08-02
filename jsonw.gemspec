@@ -25,4 +25,11 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
+
+  spec.add_development_dependency "json"
+  spec.add_development_dependency "oj"
+  spec.add_development_dependency "yajl-ruby"
+  spec.add_development_dependency "msgpack"
+  spec.add_development_dependency "benchmark-ips"
+
 end

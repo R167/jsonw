@@ -2,18 +2,6 @@
 
 module JsonW
   class Parser
-
-    SPECIAL = {
-      '"' => '"',
-      '\\' => "\\",
-      '/' => "/",
-      'b' => "\b",
-      'f' => "\f",
-      'n' => "\n",
-      'r' => "\r",
-      't' => "\t"
-    }.freeze
-
     BLANK_SPACE = /\s*/m
     UNICODE = /\A\h{4}\z/
     STRING_MATCHER = /([^\\"]*)(\\|")/
@@ -31,7 +19,12 @@ module JsonW
         @index = 0
         @data = data
 
-        parse_value
+        val = parse_value
+        if @index == @data.length
+          val
+        else
+          raise ParseError.new("Unexpected token")
+        end
       end
     end
 
@@ -54,6 +47,7 @@ module JsonW
       when nil
         raise ParseError.new("Value can't be blank")
       else
+        puts @data[0..(@index + 5)]
         raise ParseError.new("Unknown token `#{@data[@index]}'")
       end
     end
@@ -105,6 +99,12 @@ module JsonW
       @index += 1
       hash = Hash.new
 
+      skip_blank!
+      if @data[@index] == '}'
+        @index += 1
+        return hash
+      end
+
       loop do
         skip_blank!
 
@@ -128,6 +128,12 @@ module JsonW
       # Skip leading '['
       @index += 1
       array = Array.new
+
+      skip_blank!
+      if @data[@index] == ']'
+        @index += 1
+        return array
+      end
 
       loop do
         skip_blank!
