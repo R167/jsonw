@@ -39,7 +39,7 @@ JsonW.dump({author: "Winston", "numbers" => [1, 2, 3/4r, 7.5]})
 # => '{"author":"Winston","numbers":[1,2,"3\/4",7.5]}'
 
 # Parsing JSON
-JsonW.parse('{"author":"Winston","numbers":[1,2,\"3\/4\",7.5]}')
+JsonW.parse('{"author":"Winston","numbers":[1,2,"3\/4",7.5]}')
 # => {"author"=>"Winston", "numbers"=>[1, 2, "3/4", 7.5]}
 ```
 
