@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'oj'
 require 'json'
@@ -26,67 +27,65 @@ end
 json = Oj.dump(data)
 msg = MessagePack.pack(data)
 
-puts json.length
+size = json.length
 
-dump = true
-msgpack = false
+COMPARISONS = {
+  "JsonW" => {
+    dump: proc {JsonW.dump(data)},
+    parse: proc {JsonW.parse(json)}
+  },
+  "JSON" => {
+    dump: proc {JSON.fast_generate(data)},
+    parse: proc {JSON.parse(json)},
+    setup: proc {
+      JSON.generator = JSON::Ext::Generator
+      JSON.parser = JSON::Ext::Parser
+    }
+  },
+  "JSON::Pure" => {
+    dump: proc {JSON.fast_generate(data)},
+    parse: proc {JSON.parse(json)},
+    setup: proc {
+      JSON.generator = JSON::Pure::Generator
+      JSON.parser = JSON::Pure::Parser
+    }
+  },
+  "Yajl" => {
+    dump: proc {Yajl::Encoder.encode(data)},
+    parse: proc {Yajl::Parser.parse(json)}
+  },
+  "Oj" => {
+    dump: proc {Oj.dump(data)},
+    parse: proc {Oj.load(json)}
+  },
+  "MessagePack" => {
+    dump: proc {MessagePack.pack(data)},
+    parse: proc {MessagePack.unpack(msg)},
+    msgpack: true
+  }
+}
 
-Benchmark.ips do |x|
-  x.report "JsonW" do |c|
-    if dump
-      c.times { JsonW.dump(data) }
-    else
-      c.times { JsonW.parse(json) }
-    end
-  end
+def bench(size:, dump:, msgpack: false)
+  puts "Benchmarking #{dump ? 'generating' : 'parsing'} a #{size} byte JSON doc"
 
-  x.report "JSON" do |c|
-    JSON.generator = JSON::Ext::Generator
-    JSON.parser = JSON::Ext::Parser
+  key = dump ? :dump : :parse
 
-    if dump
-      c.times { JSON.fast_generate(data) }
-    else
-      c.times { JSON.parse(json) }
-    end
-  end
+  Benchmark.ips do |x|
 
-  x.report "JSON::Pure" do |c|
-    JSON.generator = JSON::Pure::Generator
-    JSON.parser = JSON::Pure::Parser
+    COMPARISONS.each_pair do |name, meta|
+      next if meta[:msgpack] && !msgpack
 
-    if dump
-      c.times { JSON.fast_generate(data) }
-    else
-      c.times { JSON.parse(json) }
-    end
-  end
+      x.report(name) do |c|
+        meta[:setup]&.call
 
-  x.report "Yajl" do |c|
-    if dump
-      c.times { Yajl::Encoder.encode(data) }
-    else
-      c.times { Yajl::Parser.parse(json) }
-    end
-  end
-
-  x.report "Oj" do |c|
-    if dump
-      c.times { Oj.dump(data) }
-    else
-      c.times { Oj.load(json) }
-    end
-  end
-
-  if msgpack
-    x.report "MessagePack" do |c|
-      if dump
-        c.times { MessagePack.pack(data) }
-      else
-        c.times { MessagePack.unpack(msg) }
+        c.times(&meta[key])
       end
     end
-  end
 
-  x.compare!
+    x.compare!
+  end
 end
+
+bench(size: size, dump: true)
+puts
+bench(size: size, dump: false)

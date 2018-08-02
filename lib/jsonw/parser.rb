@@ -171,7 +171,6 @@ module JsonW
 
     def skip_blank!(sep = nil)
       @index += @data.match(BLANK_SPACE, @index)[0].length
-      raise ParseError.new("FORM FEED NOT SUPPORTED") if @data[@index] == "\f"
 
       unless sep.nil?
         raise ParseError.new("`#{sep}' did not follow in parsing") unless @data[@index, sep.length] == sep

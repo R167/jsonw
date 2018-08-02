@@ -2,7 +2,7 @@
 
 module JsonW
   class Generator
-    SPECIAL_MATCHER = /["\/\\\t\n\f\b\r]/
+    SPECIAL_MATCHER = /[\/\\\t\n\f\b\r]/
 
     def initialize
     end
